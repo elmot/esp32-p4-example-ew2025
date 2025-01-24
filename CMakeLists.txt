@@ -15,7 +15,7 @@ set(COMPONENTS
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-project(esp32-sdl3-example)
+project(esp32-p4-example-ew2025)
 
 get_filename_component(configName "${CMAKE_BINARY_DIR}" NAME)
 list(APPEND EXTRA_COMPONENT_DIRS "${CMAKE_SOURCE_DIR}/components/esp_littlefs")
