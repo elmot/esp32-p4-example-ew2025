@@ -19,9 +19,9 @@ static uint8_t clamp(int value)
 }
 
 // Convert YUV to RGB
-void IRAM_ATTR yuy2_to_rgb565(const uint8_t *yuy2, uint16_t *rgb565, int width, int height)
+void IRAM_ATTR yuy2_to_rgb565(const uint8_t *yuy2, uint16_t *rgb565, unsigned int width,unsigned int height)
 {
-    int size = width * height;
+    unsigned size = width * height;
 
     for (int i = 0; i < size; i += 2) {
         int y0 = yuy2[i * 2 + 0];

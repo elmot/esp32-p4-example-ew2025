@@ -10,17 +10,17 @@
 #include "graphics.h"
 #include "filesystem.h"
 #include "text.h"
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+#include "camera.h"
 
-Uint32 SDLCALL TimerCallback(void *param, SDL_TimerID timerID, Uint32 interval)
-{
+Uint32 SDLCALL TimerCallback(void *param, SDL_TimerID timerID, Uint32 interval) {
+    (void) param;
+    (void) timerID;
     // printf("Timer callback executed!\n");
     return interval; // Return the interval to keep the timer running
 }
 
-void* sdl_thread(void* args) {
+void *sdl_thread(void *args) {
+    (void) args;
     printf("SDL3 on ESP32\n");
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) == false) {
@@ -57,11 +57,10 @@ void* sdl_thread(void* args) {
         printf("Timer created successfully\n");
     }
 
-    SDL_Texture *textTexture = render_text(renderer, font, "Hello ESP32 - SDL3", (SDL_Color){255, 255, 255, 255});
+    SDL_Texture *textTexture = render_text(renderer, font, "Hello ESP32 - SDL3", (SDL_Color) {255, 255, 255, 255});
     SDL_Texture *imageTexture = LoadBackgroundImage(renderer, "/assets/espressif.bmp");
-
-    float rect_x = 10.0f, speed = 2.0f;
-    int direction = 1;
+    SDL_Texture *cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
+                                                   FRAME_H_RES, FRAME_V_RES);
 
     float bmp_x = 2.0f, bmp_y = 2.0f;
     float bmp_speed_x = 2.0f, bmp_speed_y = 2.0f;
@@ -69,24 +68,8 @@ void* sdl_thread(void* args) {
     float text_x = 30.0f, text_y = 40.0f;
     float text_speed_x = 1.5f, text_speed_y = 1.2f;
     float text_scale = 1.0f, text_scale_speed = 0.01f;
-    int text_direction_x = 1, text_direction_y = 1;
-    int scale_direction = 1;
-
-    printf("Starting Lua\n");
-    lua_State *L = luaL_newstate();
-    printf("Opening Lua Libs\n");
-    luaL_openlibs(L);
-
-    lua_pushinteger(L, 42);
-    lua_setglobal(L, "answer");
-
-    char * code = "print(answer)";
-    if (luaL_dostring(L, code) == LUA_OK) {
-        lua_pop(L, lua_gettop(L));
-    }
-
-    printf("Closing Lua\n");
-    lua_close(L);
+    float text_direction_x = 1, text_direction_y = 1;
+    float scale_direction = 1;
 
     printf("Entering main loop...\n");
 
@@ -96,8 +79,8 @@ void* sdl_thread(void* args) {
             if (event.type == SDL_EVENT_QUIT) {
                 break;
             } else if (event.type == SDL_EVENT_FINGER_UP) {
-                bmp_x = (float)event.tfinger.x;
-                bmp_y = (float)event.tfinger.y;
+                bmp_x = (float) event.tfinger.x;
+                bmp_y = (float) event.tfinger.y;
                 printf("Finger up [%f, %f]\n", bmp_x, bmp_y);
             }
         }
@@ -108,9 +91,6 @@ void* sdl_thread(void* args) {
         if (bmp_x <= 0 || bmp_x + 32 >= BSP_LCD_H_RES) bmp_speed_x *= -1;
         if (bmp_y <= 0 || bmp_y + 32 >= BSP_LCD_V_RES) bmp_speed_y *= -1;
 
-        rect_x += speed * direction;
-        if (rect_x <= 0 || rect_x + 50 >= BSP_LCD_H_RES) direction *= -1;
-
         text_x += text_speed_x * text_direction_x;
         text_y += text_speed_y * text_direction_y;
         if (text_x <= 0 || text_x >= 200) text_direction_x *= -1;
@@ -119,19 +99,19 @@ void* sdl_thread(void* args) {
         text_scale += text_scale_speed * scale_direction;
         if (text_scale <= 0.5f || text_scale >= 2.0f) scale_direction *= -1;
 
+        SDL_UpdateTexture(cameraTexture, NULL, (void*)cam_buffer, FRAME_H_RES * 2);
         clear_screen(renderer);
         draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
-        draw_moving_rectangles(renderer, rect_x);
         draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
-
+        draw_image(renderer, cameraTexture, 100, 100, FRAME_H_RES, FRAME_V_RES);
         SDL_RenderPresent(renderer);
         vTaskDelay(pdMS_TO_TICKS(16));
     }
-
     return NULL;
 }
 
 void app_main(void) {
+    (void) app_main;
     pthread_t sdl_pthread;
 
     pthread_attr_t attr;
@@ -145,4 +125,6 @@ void app_main(void) {
     }
 
     pthread_detach(sdl_pthread);
+    init_camera();
+
 }

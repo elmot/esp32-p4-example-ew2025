@@ -3,7 +3,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
-#include "esp_lcd_panel_ops.h"
+//#include "esp_lcd_panel_ops.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -14,32 +14,30 @@
 #include "usb/usb_host.h"
 #include "usb/uvc_host.h"
 
-#define FRAME_H_RES  320
-#define FRAME_V_RES  240
-#define FRAME_FORMAT UVC_VS_FORMAT_MJPEG
-#define FRAME_FPS    15
+#include "camera.h"
+//#define FRAME_FORMAT UVC_VS_FORMAT_MJPEG
+#define FRAME_FORMAT UVC_VS_FORMAT_YUY2
+#define FRAME_FPS    30
 #define DECODE_EVERY_XTH_FRAME 2        // Every 2nd frame will be decoded and send to display. This save CPU time
-#define DECODE_WORKING_BUFFER_SIZE 4000 // We must increase JPEG decoder working buffer size
+#define DECODE_WORKING_BUFFER_SIZE 24000 // We must increase JPEG decoder working buffer size
 
 #if CONFIG_SPIRAM
-#define NUMBER_OF_FRAME_BUFFERS 3 // Number of frames from the camera
+#define NUMBER_OF_FRAME_BUFFERS 5 // Number of frames from the camera
 #else
 #define NUMBER_OF_FRAME_BUFFERS 2 // Number of frames from the camera
 #endif
 
-//@todo make the LCD feature optional
-
-static uint16_t *fb = NULL; // Framebuffer for decoded data (to LCD)
-static const char *TAG = "example";
-static esp_lcd_panel_handle_t display_panel;
+volatile uint16_t *cam_buffer = NULL; // Framebuffer for decoded data (to LCD)
+static const char *TAG = "UVC_CAM";
 static QueueHandle_t frame_q = NULL; // Queue of received frames that are passed to processing task
 static SemaphoreHandle_t device_disconnected_sem;
 static uvc_host_stream_hdl_t stream;
 
-void yuy2_to_rgb565(const uint8_t *yuy2, uint16_t *rgb565, int width, int height);
+void yuy2_to_rgb565(const uint8_t *yuy2, uint16_t *rgb565, unsigned int width,unsigned  int height);
 
 void stream_callback(const uvc_host_stream_event_data_t *event, void *user_ctx)
 {
+    (void) user_ctx;
     switch (event->type) {
         case UVC_HOST_TRANSFER_ERROR:
             ESP_LOGE(TAG, "USB error");
@@ -57,20 +55,20 @@ void stream_callback(const uvc_host_stream_event_data_t *event, void *user_ctx)
             break;
         default:
             abort();
-            break;
     }
 }
 
 bool frame_callback(const uvc_host_frame_t *frame, void *user_ctx)
 {
+    (void) user_ctx;
     bool frame_processed = false; // If we return false from this callback, we must return the frame with uvc_host_frame_return(stream, frame);
 
     switch (frame->vs_format.format) {
         case UVC_VS_FORMAT_YUY2: {
             ESP_LOGD(TAG, "YUY2 frame %dx%d", frame->vs_format.h_res, frame->vs_format.v_res);
-            if (fb) {
-                yuy2_to_rgb565(frame->data, fb, frame->vs_format.h_res, frame->vs_format.v_res);
-                esp_lcd_panel_draw_bitmap(display_panel, 0, 0, frame->vs_format.h_res, frame->vs_format.v_res, (const void *)fb);
+            if (cam_buffer) {
+                yuy2_to_rgb565(frame->data, (uint16_t*)cam_buffer, frame->vs_format.h_res, frame->vs_format.v_res);
+//                esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, (int)frame->vs_format.h_res, (int)frame->vs_format.v_res, (const void *)fb);
             }
             frame_processed = true;
             break;
@@ -93,8 +91,9 @@ bool frame_callback(const uvc_host_frame_t *frame, void *user_ctx)
     return frame_processed;
 }
 
-static void processing_task(void *pvParameters)
+_Noreturn static void processing_task(void *pvParameters)
 {
+    (void) pvParameters;
     uvc_host_frame_t *frame;
     uint8_t *jpeg_working_buffer = malloc(DECODE_WORKING_BUFFER_SIZE);
     assert(jpeg_working_buffer);
@@ -104,12 +103,12 @@ static void processing_task(void *pvParameters)
         ESP_LOGD(TAG, "MJPEG frame %dx%d %d bytes", frame->vs_format.h_res, frame->vs_format.v_res, frame->data_len);
 
         static int frame_i = 0;
-        if (fb && ((frame_i % DECODE_EVERY_XTH_FRAME) == 0)) {
+        if (cam_buffer && ((frame_i % DECODE_EVERY_XTH_FRAME) == 0)) {
             frame_i = 0;
             esp_jpeg_image_cfg_t jpeg_cfg = {
                     .indata = (uint8_t *)frame->data,
                     .indata_size = frame->data_len,
-                    .outbuf = (uint8_t *)fb,
+                    .outbuf = (uint8_t *)cam_buffer,
                     .outbuf_size = FRAME_H_RES * FRAME_V_RES * 2,
                     .out_format = JPEG_IMAGE_FORMAT_RGB565,
                     .out_scale = JPEG_IMAGE_SCALE_0,
@@ -124,7 +123,7 @@ static void processing_task(void *pvParameters)
             esp_jpeg_image_output_t outimg;
 
             if (ESP_OK == esp_jpeg_decode(&jpeg_cfg, &outimg)) {
-                esp_lcd_panel_draw_bitmap(display_panel, 0, 0, outimg.width, outimg.height, (const void *)fb);
+//                esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, outimg.width, outimg.height, (const void *)fb);
             } else {
                 ESP_LOGW(TAG, "Decoding failed");
             }
@@ -137,12 +136,13 @@ static void processing_task(void *pvParameters)
     }
 
     // This code should never be reached. Leaving it here for completeness
-    free(jpeg_working_buffer);
-    vTaskDelete(NULL);
+    //free(jpeg_working_buffer);
+    //vTaskDelete(NULL);
 }
 
-static void usb_lib_task(void *arg)
+_Noreturn static void usb_lib_task(void *arg)
 {
+    (void) arg;
     while (1) {
         // Start handling system events
         uint32_t event_flags;
@@ -157,14 +157,12 @@ static void usb_lib_task(void *arg)
     }
 }
 
-void _app_main(void)
+void init_camera(void)
 {
-    // BSP stuff
-    esp_lcd_panel_io_handle_t display_io;
 
     //@todo does not work in PSRAM... :'(
-    fb = heap_caps_aligned_alloc(64, FRAME_H_RES * FRAME_V_RES * 2, MALLOC_CAP_INTERNAL);
-    if (fb == NULL) {
+    cam_buffer = heap_caps_aligned_alloc(64, FRAME_H_RES * FRAME_V_RES * 2, MALLOC_CAP_INTERNAL);
+    if (cam_buffer == NULL) {
         ESP_LOGW(TAG, "Insufficient memory for LCD frame buffer. LCD output disabled.");
     }
 
@@ -213,7 +211,7 @@ void _app_main(void)
             },
             .advanced = {
                     .number_of_frame_buffers = NUMBER_OF_FRAME_BUFFERS,
-                    .frame_size = 30 * 1024,
+                    .frame_size = 2 * FRAME_H_RES * FRAME_V_RES,
 #if CONFIG_SPIRAM
                     .frame_heap_caps = MALLOC_CAP_SPIRAM,
 #else
