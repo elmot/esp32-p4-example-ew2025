@@ -20,3 +20,4 @@ dependencies:
 
   espressif/opencv: '*'
   espressif/usb_host_uvc: '*'
+  espressif/esp_jpeg: "~1.2"
