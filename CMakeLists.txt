@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Select board configuration based on -DBUILD_BOARD
-if(NOT DEFINED BUILD_BOARD)
-    message(FATAL_ERROR "BUILD_BOARD CMake variable is not set. Use idf.py @boards/BOARD.cfg reconfigure")
-endif()
+# -DSDKCONFIG_DEFAULTS="sdkconfig.defaults.esp32_p4_function_ev_board;sdkconfig.defaults" -DBUILD_BOARD="esp32_p4_function_ev_board_noglib" -DIDF_TARGET=esp32p4
+
+set(BUILD_BOARD esp32_p4_function_ev_board_noglib)
+set(IDF_TARGET esp32p4)
 
 set(ENV{BUILD_BOARD} ${BUILD_BOARD})
 
-set(COMPONENTS
-    main
-    ${BUILD_BOARD}
-    georgik__sdl
-) # "Trim" the build. Include the minimal set of components; main and anything it depends on.
+set(COMPILER_OPTIMIZATION_NONE 1)
+
+# "Trim" the build. Include the minimal set of components; main and anything it depends on.
+set(COMPONENTS  main esp32_p4_function_ev_board_noglib georgik__sdl)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
