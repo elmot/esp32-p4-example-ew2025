@@ -11,6 +11,9 @@
 #include "filesystem.h"
 #include "text.h"
 #include "camera.h"
+//#include "esp_heap_trace.h"
+
+void print_psram_info();
 
 Uint32 SDLCALL TimerCallback(void *param, SDL_TimerID timerID, Uint32 interval) {
     (void) param;
@@ -71,8 +74,9 @@ void *sdl_thread(void *args) {
     float text_direction_x = 1, text_direction_y = 1;
     float scale_direction = 1;
 
+    print_psram_info();
     printf("Entering main loop...\n");
-
+//    heap_trace_dump();
     SDL_Event event;
     while (1) {
         while (SDL_PollEvent(&event)) {
@@ -110,11 +114,17 @@ void *sdl_thread(void *args) {
     return NULL;
 }
 
+#define HEAP_TRACE_MAX_STACK (450)
+
+//static heap_trace_record_t record_buffer[HEAP_TRACE_MAX_STACK];
 void app_main(void) {
     (void) app_main;
     pthread_t sdl_pthread;
 
     pthread_attr_t attr;
+    print_psram_info();
+//    heap_trace_init_standalone(record_buffer, HEAP_TRACE_MAX_STACK);
+//    heap_trace_start(HEAP_TRACE_ALL);
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 32768);  // Set the stack size for the thread
 
@@ -127,4 +137,12 @@ void app_main(void) {
     pthread_detach(sdl_pthread);
     init_camera();
 
+}
+
+void print_psram_info() {
+    printf("PSRAM HEAP: total %d, free: %d; largest free block: %d\n\r",
+           heap_caps_get_total_size(MALLOC_CAP_SPIRAM),
+           heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+           heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM)
+           );
 }
