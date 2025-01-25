@@ -22,10 +22,13 @@ Uint32 SDLCALL TimerCallback(void *param, SDL_TimerID timerID, Uint32 interval) 
     return interval; // Return the interval to keep the timer running
 }
 
+uint16_t * processedBuffer;
+
 void *sdl_thread(void *args) {
     (void) args;
     printf("SDL3 on ESP32\n");
-
+//    processedBuffer = heap_caps_calloc(1, FRAME_H_RES * FRAME_V_RES * 3, MALLOC_CAP_SPIRAM);
+//    assert(processedBuffer != NULL);
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) == false) {
         printf("Unable to initialize SDL: %s\n", SDL_GetError());
         return NULL;
@@ -50,8 +53,8 @@ void *sdl_thread(void *args) {
     SDL_InitFS();
     TestFileOpen("/assets/espressif.bmp");
 
-    TTF_Font *font = initialize_font("/assets/FreeSans.ttf", 12);
-    if (!font) return NULL;
+//    TTF_Font *font = initialize_font("/assets/FreeSans.ttf", 12);
+//    if (!font) return NULL;
 
     SDL_TimerID timer_id = SDL_AddTimer(1000, TimerCallback, NULL);
     if (timer_id == 0) {
@@ -60,9 +63,11 @@ void *sdl_thread(void *args) {
         printf("Timer created successfully\n");
     }
 
-    SDL_Texture *textTexture = render_text(renderer, font, "Hello ESP32 - SDL3", (SDL_Color) {255, 255, 255, 255});
+//    SDL_Texture *textTexture = render_text(renderer, font, "Hello ESP32 - SDL3", (SDL_Color) {255, 255, 255, 255});
     SDL_Texture *imageTexture = LoadBackgroundImage(renderer, "/assets/espressif.bmp");
     SDL_Texture *cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
+                                                   FRAME_H_RES, FRAME_V_RES);
+    SDL_Texture *edgeTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
                                                    FRAME_H_RES, FRAME_V_RES);
 
     float bmp_x = 2.0f, bmp_y = 2.0f;
@@ -106,8 +111,10 @@ void *sdl_thread(void *args) {
         SDL_UpdateTexture(cameraTexture, NULL, (void*)cam_buffer, FRAME_H_RES * 2);
         clear_screen(renderer);
         draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
-        draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
-        draw_image(renderer, cameraTexture, 100, 100, FRAME_H_RES, FRAME_V_RES);
+//        draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
+        draw_image(renderer, cameraTexture, 50, 50, FRAME_H_RES, FRAME_V_RES);
+        edge_detection(cam_buffer, processedBuffer);
+        draw_image(renderer, edgeTexture, 100 + FRAME_H_RES, 50, FRAME_H_RES, FRAME_V_RES);
         SDL_RenderPresent(renderer);
         vTaskDelay(pdMS_TO_TICKS(16));
     }

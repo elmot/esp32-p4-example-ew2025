@@ -6,6 +6,7 @@ idf_component_register(
         "graphics.c"
         "camera.c"
         "yuy2.c"
+        "opencv_transform.cpp"
     INCLUDE_DIRS "."
 )
 

@@ -14,8 +14,9 @@ set(COMPONENTS  main esp32_p4_function_ev_board_noglib georgik__sdl)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-project(esp32-p4-example-ew2025)
+project(esp32-p4-example-ew2025 C CXX)
 
 get_filename_component(configName "${CMAKE_BINARY_DIR}" NAME)
 list(APPEND EXTRA_COMPONENT_DIRS "${CMAKE_SOURCE_DIR}/components/esp_littlefs")
 littlefs_create_partition_image(assets assets FLASH_IN_PROJECT)
+add_link_options(--enable-non-contiguous-regions)
