@@ -12,7 +12,9 @@ extern "C" {
 
 void init_camera(void);
 
-void edge_detection(const uint16_t * const  srcRgb565, uint16_t  * dstRgb565);
+void init_image_processing();
+
+void image_processing(const uint16_t * const  srcRgb565, uint16_t  * outFrameA, uint16_t  * outFrameB, uint16_t  * outFrameC);
 
 #ifdef __cplusplus
 }
