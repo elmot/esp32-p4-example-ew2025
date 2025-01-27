@@ -115,29 +115,38 @@ void *sdl_thread(void *args) {
         draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
 
         const SDL_Rect standardRect = {.x = 0, .y = 0, .w = FRAME_H_RES, .h = FRAME_H_RES};
-        void *pixelsA;
-        void *pixelsB;
-        void *pixelsC;
         int pitch;
+        void* cameraPixels;
 
-        SDL_UpdateTexture(cameraTexture, NULL, (void*)cam_buffer, FRAME_H_RES * 2);
-        draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
+        SDL_LockTexture(cameraTexture, &standardRect, &cameraPixels, &pitch);
+        assert(pitch == FRAME_H_RES * 2);
+        memcpy(cameraPixels, cam_buffer, FRAME_V_RES * FRAME_H_RES * 2);
+        SDL_UnlockTexture(cameraTexture);
+
         draw_image(renderer, cameraTexture, 50, 50, FRAME_H_RES, FRAME_V_RES);
-        SDL_LockTexture(outputTextureA, &standardRect, &pixelsA, &pitch);
-        assert(pitch == FRAME_H_RES * 2);
-        SDL_LockTexture(outputTextureB, &standardRect, &pixelsB, &pitch);
-        assert(pitch == FRAME_H_RES * 2);
-        SDL_LockTexture(outputTextureC, &standardRect, &pixelsC, &pitch);
-        assert(pitch == FRAME_H_RES * 2);
-        image_processing(cam_buffer, pixelsA, pixelsB,pixelsC);
-        SDL_UnlockTexture(outputTextureA);
-        SDL_UnlockTexture(outputTextureB);
-        SDL_UnlockTexture(outputTextureC);
+        if(is_image_processing_done()) {
+            void *pixelsA;
+            void *pixelsB;
+            void *pixelsC;
+            SDL_LockTexture(outputTextureA, &standardRect, &pixelsA, &pitch);
+            assert(pitch == FRAME_H_RES * 2);
+            SDL_LockTexture(outputTextureB, &standardRect, &pixelsB, &pitch);
+            assert(pitch == FRAME_H_RES * 2);
+            SDL_LockTexture(outputTextureC, &standardRect, &pixelsC, &pitch);
+            assert(pitch == FRAME_H_RES * 2);
+            image_processing_update_pixels(pixelsA, pixelsB, pixelsC);
+            SDL_UnlockTexture(outputTextureA);
+            SDL_UnlockTexture(outputTextureB);
+            SDL_UnlockTexture(outputTextureC);
+            image_processing_start(cam_buffer);
+        }
         draw_image(renderer, outputTextureA, 100 + FRAME_H_RES, 50, FRAME_H_RES, FRAME_V_RES);
         draw_image(renderer, outputTextureB, 50, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
         draw_image(renderer, outputTextureC, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
+        draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
+        draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
         SDL_RenderPresent(renderer);
-        vTaskDelay(pdMS_TO_TICKS(16));
+        vTaskDelay(pdMS_TO_TICKS(6));
     }
 }
 

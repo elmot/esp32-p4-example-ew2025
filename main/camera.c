@@ -27,7 +27,7 @@
 #define NUMBER_OF_FRAME_BUFFERS 2 // Number of frames from the camera
 #endif
 
-volatile uint16_t *cam_buffer = NULL; // Framebuffer for decoded data (to LCD)
+uint16_t *cam_buffer = NULL; // Framebuffer for decoded data (to LCD)
 static const char *TAG = "UVC_CAM";
 static QueueHandle_t frame_q = NULL; // Queue of received frames that are passed to processing task
 static SemaphoreHandle_t device_disconnected_sem;
