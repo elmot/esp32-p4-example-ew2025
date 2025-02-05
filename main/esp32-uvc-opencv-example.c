@@ -162,7 +162,7 @@ void app_main(void) {
 //    heap_trace_init_standalone(record_buffer, HEAP_TRACE_MAX_STACK);
 //    heap_trace_start(HEAP_TRACE_ALL);
     pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 32768);  // Set the stack size for the thread
+    pthread_attr_setstacksize(&attr, 28000);  // Set the stack size for the thread
 
     int ret = pthread_create(&sdl_pthread, &attr, sdl_thread, NULL);
     if (ret != 0) {
