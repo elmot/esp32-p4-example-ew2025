@@ -1,7 +1,7 @@
 <component name="DebugServers">
   <esp-idf-debug-target name="ESP-IDF DOWNLOAD" uniqueID="f383b37d-22e3-4e5e-82b2-16acc2260b7a">
     <console enabled="false" />
-    <target reset-command="monitor reset halt" reset-before="false" no-clock-boost="false" verify="false" />
+    <target no-clock-boost="false" verify="false" />
     <connection port="3333" />
   </esp-idf-debug-target>
 </component>

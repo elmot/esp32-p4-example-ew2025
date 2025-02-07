@@ -4,5 +4,13 @@
     <option name="pythonIntegrationState" value="YES" />
   </component>
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
-  <component name="WestSettings"><![CDATA[{}]]></component>
+  <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/build/esp-idf/espressif__opencv/opencv-build/install/include" />
+    </sourceRoots>
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/managed_components" />
+    </libraryRoots>
+  </component>
+  <component name="WestSettings">{}</component>
 </project>

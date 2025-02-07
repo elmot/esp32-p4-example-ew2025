@@ -13,6 +13,8 @@
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/bt/esp_ble_mesh/lib/lib" vcs="Git" />
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/bt/host/nimble/nimble" vcs="Git" />
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/cmock/CMock" vcs="Git" />
+    <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/cmock/CMock/vendor/c_exception" vcs="Git" />
+    <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/cmock/CMock/vendor/unity" vcs="Git" />
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/esp_coex/lib" vcs="Git" />
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/esp_phy/lib" vcs="Git" />
     <mapping directory="C:/Espressif/frameworks/esp-idf-master/components/esp_wifi/lib" vcs="Git" />
