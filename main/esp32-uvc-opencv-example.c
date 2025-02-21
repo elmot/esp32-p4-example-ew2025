@@ -13,6 +13,9 @@
 
 void print_psram_info();
 
+volatile bool finger_detected;
+
+
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 Uint32 SDLCALL TimerCallback(void* param, SDL_TimerID timerID, Uint32 interval)
 {
@@ -107,6 +110,7 @@ void* sdl_thread(void* args)
                 bmp_x = (float)event.tfinger.x;
                 bmp_y = (float)event.tfinger.y;
                 printf("Finger up [%f, %f]\n", bmp_x, bmp_y);
+                finger_detected = true;
             }
         }
 

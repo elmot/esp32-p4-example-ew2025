@@ -73,6 +73,10 @@ void image_processing_update_pixels(uint16_t* pixelsA, uint16_t* pixelsB, uint16
     {
         asm("nop"); // Set a breakpoint here
     }
+    if (finger_detected)
+    {
+        finger_detected = false; // Set a breakpoint here
+    }
 }
 
 void image_processing_start(void* cam_buffer)

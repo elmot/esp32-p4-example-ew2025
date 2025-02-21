@@ -19,6 +19,8 @@ void image_processing_update_pixels(uint16_t * pixelsA, uint16_t * pixelsB, uint
 bool is_image_processing_done(void);
 void image_processing_start(void * cam_buffer);
 
+extern volatile bool finger_detected;
+
 #ifdef __cplusplus
 }
 #endif

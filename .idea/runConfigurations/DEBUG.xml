@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DEBUG" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="esp32-p4-example-ew2025" TARGET_NAME="app-flash" CONFIG_NAME="Debug-ESP-IDF-MASTER" RUN_TARGET_PROJECT_NAME="esp32-p4-example-ew2025" RUN_TARGET_NAME="esp32-p4-example-ew2025.elf">
+    <method v="2" />
+  </configuration>
+</component>
