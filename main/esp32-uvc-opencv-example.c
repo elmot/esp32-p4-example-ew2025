@@ -10,6 +10,7 @@
 #include "text.h"
 #include "camera.h"
 //#include "esp_heap_trace.h"
+#include "../clion_rocks.inc"
 
 void print_psram_info();
 
@@ -83,6 +84,9 @@ void* sdl_thread(void* args)
     SDL_Texture* outputTextureC = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
                                                     FRAME_H_RES, FRAME_V_RES);
 
+    SDL_Surface *clion = SDL_CreateSurfaceFrom(GIMP_IMAGE_WIDTH,GIMP_IMAGE_HEIGHT, SDL_PIXELFORMAT_RGB565,
+                                               GIMP_IMAGE_PIXEL_DATA,GIMP_IMAGE_WIDTH * 2);
+    SDL_Texture* clionTexture = SDL_CreateTextureFromSurface(renderer,clion);
     float bmp_x = 2.0f, bmp_y = 2.0f;
     float bmp_speed_x = 2.0f, bmp_speed_y = 2.0f;
 
@@ -94,6 +98,7 @@ void* sdl_thread(void* args)
 
     print_psram_info();
     init_image_processing();
+
     printf("Entering main loop...\n");
     //    heap_trace_dump();
     SDL_Event event;
@@ -160,9 +165,11 @@ void* sdl_thread(void* args)
         }
         draw_image(renderer, outputTextureA, 100 + FRAME_H_RES, 50, FRAME_H_RES, FRAME_V_RES);
         draw_image(renderer, outputTextureB, 50, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
-        draw_image(renderer, outputTextureC, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
-        draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
-        draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
+        // draw_image(renderer, outputTextureC, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
+        draw_image(renderer, clionTexture, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
+
+        // draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
+        // draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
         SDL_RenderPresent(renderer);
         vTaskDelay(pdMS_TO_TICKS(6));
     }
