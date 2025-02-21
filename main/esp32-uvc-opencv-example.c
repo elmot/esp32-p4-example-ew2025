@@ -134,7 +134,7 @@ void* sdl_thread(void* args)
         if (text_scale <= 0.5f || text_scale >= 2.0f) scale_direction *= -1;
 
         clear_screen(renderer);
-        draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
+        // draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
 
         const SDL_Rect standardRect = {.x = 0, .y = 0, .w = FRAME_H_RES, .h = FRAME_H_RES};
         int pitch;
