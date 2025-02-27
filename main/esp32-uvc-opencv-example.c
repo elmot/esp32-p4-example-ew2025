@@ -166,7 +166,20 @@ void* sdl_thread(void* args)
         draw_image(renderer, outputTextureA, 100 + FRAME_H_RES, 50, FRAME_H_RES, FRAME_V_RES);
         draw_image(renderer, outputTextureB, 50, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
         // draw_image(renderer, outputTextureC, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
-        draw_image(renderer, clionTexture, 100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES, FRAME_V_RES);
+        static int clion_shift = 0;
+        clion_shift = (clion_shift >= FRAME_H_RES) ? 0 : clion_shift + 8;
+
+        {
+            SDL_FRect srcRect = {clion_shift, 0, FRAME_H_RES - clion_shift, FRAME_V_RES};
+            SDL_FRect destRect = {100 + FRAME_H_RES, 100 + FRAME_V_RES, FRAME_H_RES - clion_shift, FRAME_V_RES};
+            SDL_RenderTexture(renderer, clionTexture, &srcRect, &destRect);
+        }
+
+        {
+            SDL_FRect srcRect = {0, 0,  clion_shift, FRAME_V_RES};
+            SDL_FRect destRect = {100 + 2*FRAME_H_RES  - clion_shift, 100 + FRAME_V_RES, clion_shift, FRAME_V_RES};
+            SDL_RenderTexture(renderer, clionTexture, &srcRect, &destRect);
+        }
 
         // draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
         // draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
