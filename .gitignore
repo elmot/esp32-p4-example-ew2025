@@ -3,4 +3,6 @@ build.*/
 build*/
 sdkconfig
 managed_components/
+sdkconfig.old
+dependencies.lock
 
