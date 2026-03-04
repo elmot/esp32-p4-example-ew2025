@@ -32,7 +32,6 @@ void* sdl_thread(void* args)
     (void)args;
     printf("SDL3 on ESP32\n");
     print_psram_info();
-    print_psram_info();
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) == false)
     {
         printf("Unable to initialize SDL: %s\n", SDL_GetError());
@@ -58,7 +57,7 @@ void* sdl_thread(void* args)
     clear_screen(renderer);
 
     SDL_InitFS();
-    TestFileOpen("/assets/espressif.bmp");
+//    TestFileOpen("/assets/espressif.bmp");
 
     TTF_Font* font = initialize_font("/assets/FreeSans.ttf", 12);
     if (!font) return NULL;
@@ -73,8 +72,8 @@ void* sdl_thread(void* args)
         printf("Timer created successfully\n");
     }
 
-    SDL_Texture* textTexture = render_text(renderer, font, "Hello ESP32 - SDL3", (SDL_Color){255, 255, 255, 255});
-    SDL_Texture* imageTexture = LoadBackgroundImage(renderer, "/assets/espressif.bmp");
+    SDL_Texture* textTexture = render_text(renderer, font, "ESP32-P4 + OpenCV", (SDL_Color){255, 255, 255, 255});
+    SDL_Texture* logoTexture = LoadBackgroundImage(renderer, "/assets/espressif.bmp");
     SDL_Texture* cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
                                                    FRAME_H_RES, FRAME_V_RES);
     SDL_Texture* outputTextureA = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING,
@@ -110,11 +109,11 @@ void* sdl_thread(void* args)
             {
                 break;
             }
-            else if (event.type == SDL_EVENT_FINGER_UP)
+            else if (event.type == SDL_EVENT_FINGER_DOWN)
             {
                 bmp_x = (float)event.tfinger.x;
                 bmp_y = (float)event.tfinger.y;
-                printf("Finger up [%f, %f]\n", bmp_x, bmp_y);
+                printf("Finger down [%f, %f]\n", bmp_x, bmp_y);
                 finger_detected = true;
             }
         }
@@ -181,8 +180,8 @@ void* sdl_thread(void* args)
             SDL_RenderTexture(renderer, clionTexture, &srcRect, &destRect);
         }
 
-        // draw_image(renderer, imageTexture, bmp_x, bmp_y, 32.0f, 32.0f);
-        // draw_text(renderer, textTexture, text_x, text_y, 120, 20 * text_scale);
+        draw_image(renderer, logoTexture, 824, 100, 120.0f, 120.0f);
+        draw_text(renderer, textTexture, 804, 50, 190.0f, 40);
         SDL_RenderPresent(renderer);
         vTaskDelay(pdMS_TO_TICKS(6));
     }
