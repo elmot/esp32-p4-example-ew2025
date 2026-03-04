@@ -162,6 +162,8 @@ _Noreturn static void processing_task(void *pvParameters)
 _Noreturn static void usb_lib_task(void *arg)
 {
     (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(500));
+    usb_host_lib_set_root_port_power(true);
     while (1)
     {
         // Start handling system events
@@ -220,6 +222,7 @@ void init_camera(void)
     ESP_LOGI(TAG, "Installing USB Host");
     const usb_host_config_t host_config = {
         .skip_phy_setup = false,
+        .root_port_unpowered = true,
         .intr_flags = ESP_INTR_FLAG_LEVEL1,
     };
     ESP_ERROR_CHECK(usb_host_install(&host_config));
